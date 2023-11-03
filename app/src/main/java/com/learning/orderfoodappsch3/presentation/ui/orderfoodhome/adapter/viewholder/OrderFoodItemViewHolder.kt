@@ -11,10 +11,10 @@ import com.learning.orderfoodappsch3.utils.toCurrencyFormat
 class LinearOrderFoodItemViewHolder(
     private val binding: ItemLinearOrderFoodBinding,
     private val onClickListener: (OrderFood) -> Unit
-): RecyclerView.ViewHolder(binding.root), ViewHolderBinder<OrderFood> {
+) : RecyclerView.ViewHolder(binding.root), ViewHolderBinder<OrderFood> {
 
     override fun bind(item: OrderFood) {
-        binding.ivOrderFood.load(item.imgFood){
+        binding.ivOrderFood.load(item.imgFood) {
             crossfade(true)
         }
         binding.tvOrderFoodName.text = item.foodName
@@ -28,10 +28,10 @@ class LinearOrderFoodItemViewHolder(
 class GridOrderFoodItemViewHolder(
     private val binding: ItemGridOrderFoodBinding,
     private val onClickListener: (OrderFood) -> Unit
-): RecyclerView.ViewHolder(binding.root), ViewHolderBinder<OrderFood> {
+) : RecyclerView.ViewHolder(binding.root), ViewHolderBinder<OrderFood> {
 
     override fun bind(item: OrderFood) {
-        binding.ivOrderFood.load(item.imgFood){
+        binding.ivOrderFood.load(item.imgFood) {
             crossfade(true)
         }
         binding.tvOrderFoodName.text = item.foodName

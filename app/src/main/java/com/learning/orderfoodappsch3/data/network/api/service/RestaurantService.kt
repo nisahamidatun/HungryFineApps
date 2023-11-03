@@ -27,10 +27,10 @@ interface RestaurantService {
 
     companion object {
         @JvmStatic
-        operator fun invoke(chucker : ChuckerInterceptor): RestaurantService {
+        operator fun invoke(chucker: ChuckerInterceptor): RestaurantService {
             val okHttpClient = OkHttpClient.Builder()
-                .connectTimeout(120, TimeUnit.SECONDS)
                 .addInterceptor(chucker)
+                .connectTimeout(120, TimeUnit.SECONDS)
                 .readTimeout(120, TimeUnit.SECONDS)
                 .build()
             val retrofit = Retrofit.Builder()

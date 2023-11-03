@@ -14,14 +14,14 @@ class CheckoutViewModel(private val cartRepository: CartRepo) : ViewModel() {
     val cartList = cartRepository.getDataCartFromUser().asLiveData(Dispatchers.IO)
 
     private val _checkoutResult = MutableLiveData<ResultWrapper<Boolean>>()
-    val checkoutResult : LiveData<ResultWrapper<Boolean>>
+    val checkoutResult: LiveData<ResultWrapper<Boolean>>
         get() = _checkoutResult
 
     fun order() {
         viewModelScope.launch(Dispatchers.IO) {
             // tidak akan membuat order ketika list of cartnya null
             val carts = cartList.value?.payload?.first ?: return@launch
-            cartRepository.order(carts).collect{
+            cartRepository.order(carts).collect {
                 _checkoutResult.postValue(it)
             }
         }

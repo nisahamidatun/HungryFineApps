@@ -1,7 +1,5 @@
 package com.learning.orderfoodappsch3.data.sourcedata
 
-import com.learning.orderfoodappsch3.model.OrderFood
-
 /*
 interface OrderFoodDataSource {
     fun getOrderFoods(): List<OrderFood>

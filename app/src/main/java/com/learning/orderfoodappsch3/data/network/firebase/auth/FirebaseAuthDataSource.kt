@@ -1,6 +1,6 @@
 package com.learning.orderfoodappsch3.data.network.firebase.auth
 
-import  android.net.Uri
+import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth

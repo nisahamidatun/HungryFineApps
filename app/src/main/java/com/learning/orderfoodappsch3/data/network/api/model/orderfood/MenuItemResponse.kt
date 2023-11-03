@@ -22,7 +22,7 @@ data class MenuItemResponse(
 
 fun MenuItemResponse.toMenu() = OrderFood(
     foodName = this.name.orEmpty(),
-    foodPrice = this.price?: 0,
+    foodPrice = this.price ?: 0,
     imgFood = this.imageUrl.orEmpty(),
     desc = this.description.orEmpty()
 )

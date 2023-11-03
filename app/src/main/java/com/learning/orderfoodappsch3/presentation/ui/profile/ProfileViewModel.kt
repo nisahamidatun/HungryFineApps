@@ -16,7 +16,7 @@ class ProfileViewModel(private val repo: UserRepository) : ViewModel() {
         _profileLiveData.value = updateResult
     }
 
-    fun doLogout(){
+    fun doLogout() {
         repo.doLogout()
     }
 }

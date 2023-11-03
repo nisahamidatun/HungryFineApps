@@ -9,20 +9,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class CartViewModel(private val repo: CartRepo): ViewModel() {
+class CartViewModel(val repo: CartRepo) : ViewModel() {
     val cartList = repo.getDataCartFromUser().asLiveData(Dispatchers.IO)
 
-    fun incCart(item: Cart){
+    fun incCart(item: Cart) {
         viewModelScope.launch { repo.increaseCart(item).collect() }
     }
-    fun decCart(item: Cart){
+    fun decCart(item: Cart) {
         viewModelScope.launch { repo.decreaseCart(item).collect() }
     }
-    fun delCart(item: Cart){
+    fun delCart(item: Cart) {
         viewModelScope.launch { repo.deleteCart(item).collect() }
     }
-    fun setNote(item: Cart){
+    fun setNote(item: Cart) {
         viewModelScope.launch { repo.setNote(item).collect() }
     }
-
 }
