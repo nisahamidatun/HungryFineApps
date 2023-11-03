@@ -15,7 +15,7 @@ class RegisterViewModel(private val repo: UserRepository) : ViewModel() {
 
     fun doRegister(fullName: String, email: String, password: String) {
         viewModelScope.launch {
-            repo.doRegister(fullName, email, password).collect{
+            repo.doRegister(fullName, email, password).collect {
                 _registerResult.postValue(it)
             }
         }

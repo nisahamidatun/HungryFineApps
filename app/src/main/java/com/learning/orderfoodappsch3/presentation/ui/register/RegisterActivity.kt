@@ -1,39 +1,27 @@
 package com.learning.orderfoodappsch3.presentation.ui.register
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
 import com.learning.orderfoodappsch3.R
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSource
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSourceImpl
-import com.learning.orderfoodappsch3.data.repository.UserRepository
-import com.learning.orderfoodappsch3.data.repository.UserRepositoryImpl
 import com.learning.orderfoodappsch3.databinding.ActivityRegisterBinding
 import com.learning.orderfoodappsch3.presentation.ui.login.LoginActivity
-import com.learning.orderfoodappsch3.utils.GenericViewModelFactory
+import com.learning.orderfoodappsch3.utils.AssetWrapper
 import com.learning.orderfoodappsch3.utils.highLightWord
 import com.learning.orderfoodappsch3.utils.proceedWhen
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class RegisterActivity : AppCompatActivity() {
     private val binding: ActivityRegisterBinding by lazy {
         ActivityRegisterBinding.inflate(layoutInflater)
     }
-    private val viewModel: RegisterViewModel by viewModels {
-        GenericViewModelFactory.create(createViewModel())
-    }
-
-    private fun createViewModel(): RegisterViewModel {
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val dataSource: FirebaseAuthDataSource = FirebaseAuthDataSourceImpl(firebaseAuth)
-        val repo: UserRepository = UserRepositoryImpl(dataSource)
-        return RegisterViewModel(repo)
-    }
+    private val viewModel: RegisterViewModel by viewModel()
+    private val assetWrapper: AssetWrapper by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +42,7 @@ class RegisterActivity : AppCompatActivity() {
         binding.layoutRegister.btnRegister.setOnClickListener {
             doRegister()
         }
-        binding.layoutRegister.tvNavToLogin.highLightWord(getString(R.string.text_higlight_login)) {
+        binding.layoutRegister.tvNavToLogin.highLightWord(assetWrapper.getString(R.string.text_higlight_login)) {
             navigateToLogin()
         }
     }
@@ -66,13 +54,12 @@ class RegisterActivity : AppCompatActivity() {
         startActivity(intentToLogin)
     }
 
-
     private fun doRegister() {
         if (isFormValid()) {
             val name = binding.layoutRegister.editTextName.text.toString().trim()
             val email = binding.layoutRegister.editTextEmail.text.toString().trim()
             val password = binding.layoutRegister.editTextPassword.text.toString().trim()
-            viewModel.doRegister(name,email,password)
+            viewModel.doRegister(name, email, password)
         }
     }
 
@@ -81,16 +68,16 @@ class RegisterActivity : AppCompatActivity() {
         val email = binding.layoutRegister.editTextEmail.text.toString().trim()
         val password = binding.layoutRegister.editTextPassword.text.toString().trim()
         val confirmPassword = binding.layoutRegister.editTextConfirmPassword.text.toString().trim()
-        return checkNameValidation(name) && checkEmailValidation(email)
-                && checkPasswordValidation(password, binding.layoutRegister.tilPassword)
-                && checkPasswordValidation(confirmPassword,binding.layoutRegister.tilConfirmPassword)
-                && checkPwdAndConfirmPwd(password, confirmPassword)
+        return checkNameValidation(name) && checkEmailValidation(email) &&
+            checkPasswordValidation(password, binding.layoutRegister.tilPassword) &&
+            checkPasswordValidation(confirmPassword, binding.layoutRegister.tilConfirmPassword) &&
+            checkPwdAndConfirmPwd(password, confirmPassword)
     }
 
     private fun checkNameValidation(fullName: String): Boolean {
         return if (fullName.isEmpty()) {
             binding.layoutRegister.tilName.isErrorEnabled = true
-            binding.layoutRegister.tilName.error = getString(R.string.text_error_name_cannot_empty)
+            binding.layoutRegister.tilName.error = assetWrapper.getString(R.string.text_error_name_cannot_empty)
             false
         } else {
             binding.layoutRegister.tilName.isErrorEnabled = false
@@ -101,11 +88,11 @@ class RegisterActivity : AppCompatActivity() {
     private fun checkEmailValidation(email: String): Boolean {
         return if (email.isEmpty()) {
             binding.layoutRegister.tilEmail.isErrorEnabled = true
-            binding.layoutRegister.tilEmail.error = getString(R.string.text_error_email_empty)
+            binding.layoutRegister.tilEmail.error = assetWrapper.getString(R.string.text_error_email_empty)
             false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.layoutRegister.tilEmail.isErrorEnabled = true
-            binding.layoutRegister.tilEmail.error = getString(R.string.text_error_email_invalid)
+            binding.layoutRegister.tilEmail.error = assetWrapper.getString(R.string.text_error_email_invalid)
             false
         } else {
             binding.layoutRegister.tilEmail.isErrorEnabled = false
@@ -115,23 +102,27 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun observeResult() {
         viewModel.registerResult.observe(this) {
-            it.proceedWhen(doOnLoading = {
-                binding.layoutRegister.pbLoading.isVisible = true
-                binding.layoutRegister.btnRegister.isVisible = false
+            it.proceedWhen(
+                doOnLoading = {
+                    binding.layoutRegister.pbLoading.isVisible = true
+                    binding.layoutRegister.btnRegister.isVisible = false
                 },
                 doOnSuccess = {
                     binding.layoutRegister.pbLoading.isVisible = false
                     binding.layoutRegister.btnRegister.isVisible = true
                     binding.layoutRegister.btnRegister.isEnabled = false
-                    Toast.makeText(this, getString(R.string.register_success), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, assetWrapper.getString(R.string.register_success), Toast.LENGTH_SHORT).show()
                     navigateToLogin()
                 },
                 doOnError = {
                     binding.layoutRegister.pbLoading.isVisible = false
                     binding.layoutRegister.btnRegister.isVisible = true
                     binding.layoutRegister.btnRegister.isEnabled = true
-                    Toast.makeText(this,
-                        getString(R.string.register_failed, it.exception?.message.orEmpty()), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        assetWrapper.getString(R.string.register_failed) + it.exception?.message.orEmpty(),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             )
         }
@@ -143,11 +134,11 @@ class RegisterActivity : AppCompatActivity() {
     ): Boolean {
         return if (password.isEmpty()) {
             textInputLayout.isErrorEnabled = true
-            textInputLayout.error = getString(R.string.text_error_password_empty)
+            textInputLayout.error = assetWrapper.getString(R.string.text_error_password_empty)
             false
         } else if (password.length < 8) {
             textInputLayout.isErrorEnabled = true
-            textInputLayout.error = getString(R.string.text_error_password_less_than_8_char)
+            textInputLayout.error = assetWrapper.getString(R.string.text_error_password_less_than_8_char)
             false
         } else {
             textInputLayout.isErrorEnabled = false
@@ -159,8 +150,8 @@ class RegisterActivity : AppCompatActivity() {
         return if (password != confirmPassword) {
             binding.layoutRegister.tilPassword.isErrorEnabled = true
             binding.layoutRegister.tilConfirmPassword.isErrorEnabled = true
-            binding.layoutRegister.tilPassword.error = getString(R.string.text_error_password_cannot_same)
-            binding.layoutRegister.tilConfirmPassword.error = getString(R.string.text_error_password_cannot_same)
+            binding.layoutRegister.tilPassword.error = assetWrapper.getString(R.string.text_error_password_cannot_same)
+            binding.layoutRegister.tilConfirmPassword.error = assetWrapper.getString(R.string.text_error_password_cannot_same)
             false
         } else {
             binding.layoutRegister.tilPassword.isErrorEnabled = false

@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 class DetailOrderFoodViewModel(
     private val extras: Bundle?,
     private val cartRepo: CartRepo
-): ViewModel() {
+) : ViewModel() {
     private val _resultToCart = MutableLiveData<ResultWrapper<Boolean>>()
-    val resultToCart: LiveData<ResultWrapper<Boolean>> get() =_resultToCart
+    val resultToCart: LiveData<ResultWrapper<Boolean>> get() = _resultToCart
 
     val orderFood = extras?.getParcelable<OrderFood>(DetailOrderFoodActivity.EXTRA_ORDER_FOOD)
 
@@ -23,28 +23,25 @@ class DetailOrderFoodViewModel(
 
     val countOrderLiveData = MutableLiveData<Int>().apply { postValue(0) }
 
-
-
-
     fun toCart() {
         viewModelScope.launch {
             val foodQuantity =
-                if ((countOrderLiveData.value?: 0)<= 0) 1 else countOrderLiveData.value ?: 0
+                if ((countOrderLiveData.value ?: 0) <= 0) 1 else countOrderLiveData.value ?: 0
             orderFood?.let {
-                cartRepo.createCart(it, foodQuantity).collect { result -> _resultToCart.postValue(result)}
+                cartRepo.createCart(it, foodQuantity).collect { result -> _resultToCart.postValue(result) }
             }
         }
     }
 
-    fun plus(){
+    fun plus() {
         val count = (countOrderLiveData.value ?: 0) + 1
         val pricemenu = orderFood?. foodPrice ?: 0
         countOrderLiveData.postValue(count)
         priceLiveData.postValue(count * pricemenu)
     }
 
-    fun minus(){
-        if ((countOrderLiveData.value ?: 0) > 0){
+    fun minus() {
+        if ((countOrderLiveData.value ?: 0) > 0) {
             val count = (countOrderLiveData.value ?: 0) - 1
             val pricemenu = orderFood?. foodPrice ?: 0
             countOrderLiveData.postValue(count)

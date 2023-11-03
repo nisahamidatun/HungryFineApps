@@ -10,6 +10,8 @@ data class User(
 fun FirebaseUser?.toUser() = if (this != null) {
     User(
         fullName = this.displayName.orEmpty(),
-        email = this.email.orEmpty(),
+        email = this.email.orEmpty()
     )
-} else null
+} else {
+    null
+}

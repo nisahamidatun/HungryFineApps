@@ -4,17 +4,17 @@ import com.learning.orderfoodappsch3.data.database.dao.CartDao
 import com.learning.orderfoodappsch3.data.database.entity.CartEntity
 import kotlinx.coroutines.flow.Flow
 
-interface CartDataSource{
+interface CartDataSource {
     fun getAllCart(): Flow<List<CartEntity>>
     fun getCartById(cartId: Int): Flow<CartEntity>
     suspend fun insertCart(cart: CartEntity): Long
     suspend fun insertChart(chart: List<CartEntity>)
     suspend fun updateCart(cart: CartEntity): Int
     suspend fun deleteCart(cart: CartEntity): Int
-    suspend fun deleteAll():Int
+    suspend fun deleteAll(): Int
 }
 
-class CartDataSourceImpl(private val cartDao: CartDao): CartDataSource{
+class CartDataSourceImpl(private val cartDao: CartDao) : CartDataSource {
     override fun getAllCart(): Flow<List<CartEntity>> {
         return cartDao.getAllCart()
     }

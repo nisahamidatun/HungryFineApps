@@ -11,14 +11,17 @@ import com.learning.orderfoodappsch3.model.Category
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.viewholder.CategoryViewHolder
 
 class CategoriesAdapter(private val onItemClick: (Category) -> Unit) : RecyclerView.Adapter<CategoryViewHolder>() {
-    private val dataDiffer = AsyncListDiffer(this, object: DiffUtil.ItemCallback<Category>(){
-        override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
-            return oldItem.hashCode() == newItem.hashCode()
+    private val dataDiffer = AsyncListDiffer(
+        this,
+        object : DiffUtil.ItemCallback<Category>() {
+            override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
+                return oldItem.hashCode() == newItem.hashCode()
+            }
+            override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
+                return oldItem.id == newItem.id
+            }
         }
-        override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
-            return oldItem.id == newItem.id
-        }
-    })
+    )
     fun setItem(items: List<Category>) {
         dataDiffer.submitList(items)
     }
@@ -34,7 +37,4 @@ class CategoriesAdapter(private val onItemClick: (Category) -> Unit) : RecyclerV
     }
 
     override fun getItemCount(): Int = dataDiffer.currentList.size
-
-
-
 }

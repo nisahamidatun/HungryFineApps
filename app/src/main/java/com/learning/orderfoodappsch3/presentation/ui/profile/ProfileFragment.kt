@@ -2,50 +2,48 @@ package com.learning.orderfoodappsch3.presentation.ui.profile
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
-import com.google.firebase.auth.FirebaseAuth
+import androidx.fragment.app.Fragment
 import com.learning.orderfoodappsch3.R
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSource
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSourceImpl
-import com.learning.orderfoodappsch3.data.repository.UserRepository
-import com.learning.orderfoodappsch3.data.repository.UserRepositoryImpl
 import com.learning.orderfoodappsch3.databinding.FragmentProfileBinding
 import com.learning.orderfoodappsch3.presentation.ui.login.LoginActivity
-import com.learning.orderfoodappsch3.utils.GenericViewModelFactory
+import com.learning.orderfoodappsch3.utils.AssetWrapper
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ProfileFragment : Fragment() {
-    private val binding: FragmentProfileBinding by lazy {
-        FragmentProfileBinding.inflate(layoutInflater)
-    }
+    private lateinit var binding: FragmentProfileBinding
+    private val viewModel: ProfileViewModel by viewModel()
+    private val assetWrapper: AssetWrapper by inject()
 
-    private val viewModel: ProfileViewModel by viewModels {
-        GenericViewModelFactory.create(createViewModel())
-    }
-
-    private fun createViewModel(): ProfileViewModel {
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val dataSource: FirebaseAuthDataSource = FirebaseAuthDataSourceImpl(firebaseAuth)
-        val repo: UserRepository = UserRepositoryImpl(dataSource)
-        return ProfileViewModel(repo)
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
-        return (binding.root)
+        binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        fetchData()
+        getProfile()
         setupForm()
         setClickListeners()
         showDataUser()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getProfile()
+    }
+
+    private fun getProfile() {
+        viewModel.getCurrentUser()
     }
 
     private fun setupForm() {
@@ -74,11 +72,11 @@ class ProfileFragment : Fragment() {
 
     private fun doLogout() {
         AlertDialog.Builder(requireContext())
-            .setMessage(getString(R.string.do_you_want_to_logout))
-            .setPositiveButton(getString(R.string.okay)) {_,_ ->
+            .setMessage(assetWrapper.getString(R.string.do_you_want_to_logout))
+            .setPositiveButton(assetWrapper.getString(R.string.okay)) { _, _ ->
                 viewModel.doLogout()
                 navigateToLogin()
-            }.setNegativeButton(getString(R.string.no)) { _, _ ->
+            }.setNegativeButton(assetWrapper.getString(R.string.no)) { _, _ ->
                 // do nothing
             }.create().show()
     }
@@ -92,9 +90,5 @@ class ProfileFragment : Fragment() {
 
     private fun navigateToProfileChange() {
         startActivity(Intent(requireContext(), ProfileChangeActivity::class.java))
-    }
-
-    private fun fetchData(){
-        viewModel.getCurrentUser()
     }
 }

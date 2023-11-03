@@ -1,68 +1,53 @@
 package com.learning.orderfoodappsch3.presentation.ui.orderfoodhome
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.chuckerteam.chucker.api.ChuckerInterceptor
-import com.google.firebase.auth.FirebaseAuth
-import com.learning.orderfoodappsch3.R
-import com.learning.orderfoodappsch3.data.datastore.UserPreferenceDataSourceImpl
-import com.learning.orderfoodappsch3.data.datastore.appDataStore
-import com.learning.orderfoodappsch3.data.network.api.datasource.RestaurantApiDataSource
-import com.learning.orderfoodappsch3.data.network.api.service.RestaurantService
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSourceImpl
-import com.learning.orderfoodappsch3.data.repository.OrderFoodRepositoryImpl
-import com.learning.orderfoodappsch3.data.repository.UserRepositoryImpl
 import com.learning.orderfoodappsch3.databinding.FragmentOrderFoodHomeBinding
 import com.learning.orderfoodappsch3.model.OrderFood
 import com.learning.orderfoodappsch3.presentation.ui.orderfooddetail.DetailOrderFoodActivity
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.AdapterLayoutMode
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.subadapter.CategoriesAdapter
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.subadapter.OrderFoodAdapter
-import com.learning.orderfoodappsch3.utils.GenericViewModelFactory
-import com.learning.orderfoodappsch3.utils.PreferenceDataStoreHelperImpl
+import com.learning.orderfoodappsch3.utils.AssetWrapper
 import com.learning.orderfoodappsch3.utils.proceedWhen
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class OrderFoodHomeFragment : Fragment() {
     private lateinit var binding: FragmentOrderFoodHomeBinding
 
+    private val viewModel: OrderFoodHomeViewModel by viewModel()
+    private val assetWrapper: AssetWrapper by inject()
+
     private val adapter: OrderFoodAdapter by lazy {
-        OrderFoodAdapter( modeAdapterLayout = AdapterLayoutMode.LINEAR,
+        OrderFoodAdapter(
+            modeAdapterLayout = AdapterLayoutMode.LINEAR,
             onListOrderFoodClicked = {
-            navigateToDetail(it)
-        })
+                navigateToDetail(it)
+            }
+        )
     }
 
     private val categoriesAdapter: CategoriesAdapter by lazy {
-        CategoriesAdapter{
+        CategoriesAdapter {
             viewModel.getOrderFoods(it.nameCategory.lowercase())
         }
-    }
-
-    private val viewModel: OrderFoodHomeViewModel by viewModels {
-        val chucker = ChuckerInterceptor(requireContext())
-        val service = RestaurantService.invoke(chucker)
-        val restoDataSource = RestaurantApiDataSource(service)
-        val repo = OrderFoodRepositoryImpl(restoDataSource)
-        val dataStore = this.requireContext().appDataStore
-        val dataStoreHelper = PreferenceDataStoreHelperImpl(dataStore)
-        val userPrefDataSource = UserPreferenceDataSourceImpl(dataStoreHelper)
-        val firebaseDataSource = FirebaseAuthDataSourceImpl(FirebaseAuth.getInstance())
-        val userRepo = UserRepositoryImpl(firebaseDataSource)
-        GenericViewModelFactory.create(OrderFoodHomeViewModel(repo, userPrefDataSource, userRepo))
     }
 
     private fun navigateToDetail(item: OrderFood) {
         DetailOrderFoodActivity.startActivity(requireContext(), item)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = FragmentOrderFoodHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -70,7 +55,6 @@ class OrderFoodHomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupProfileView()
         setupCategories()
         setupList()
         setupToggleLayout()
@@ -79,11 +63,20 @@ class OrderFoodHomeFragment : Fragment() {
         fetchData()
     }
 
-    private fun setupProfileView() {
-        viewModel.userDataLiveData?.fullName?.let { name ->
-            binding.username.text = name
-        } ?: getString(R.string.nisa).let { defaultName ->
-            binding.username.text = defaultName
+    override fun onResume() {
+        super.onResume()
+        getUserData()
+    }
+
+    private fun getUserData() {
+        viewModel.getUser()
+        observeUser()
+    }
+
+    private fun observeUser() {
+        viewModel.getUserLiveData.observe(viewLifecycleOwner) {
+            binding.username.text = viewModel.getUserData()?.fullName
+            viewModel.getUser()
         }
     }
 
@@ -93,7 +86,7 @@ class OrderFoodHomeFragment : Fragment() {
     }
 
     private fun setupList() {
-        val span  = if (adapter.modeAdapterLayout == AdapterLayoutMode.LINEAR) 1 else 2
+        val span = if (adapter.modeAdapterLayout == AdapterLayoutMode.LINEAR) 1 else 2
         binding.rvFoodMenu.apply {
             layoutManager = GridLayoutManager(requireContext(), span)
             adapter = this@OrderFoodHomeFragment.adapter
@@ -126,7 +119,7 @@ class OrderFoodHomeFragment : Fragment() {
     }
 
     private fun observeData() {
-        viewModel.orderFoods.observe(viewLifecycleOwner){ item ->
+        viewModel.orderFoods.observe(viewLifecycleOwner) { item ->
             val span =
                 if (adapter.modeAdapterLayout == AdapterLayoutMode.LINEAR) 1 else 2
             item.proceedWhen(doOnLoading = {
@@ -135,23 +128,24 @@ class OrderFoodHomeFragment : Fragment() {
                 binding.layoutStateOrderFood.tvError.isVisible = false
                 binding.rvFoodMenu.isVisible = false
             }, doOnSuccess = {
-                binding.layoutStateOrderFood.root.isVisible = false
-                binding.rvFoodMenu.apply {
-                    isVisible = true
-                    layoutManager = GridLayoutManager(requireContext(), span)
-                    adapter = this@OrderFoodHomeFragment.adapter
-                }
-                binding.layoutStateOrderFood.pbLoading.isVisible = false
-                binding.layoutStateOrderFood.tvError.isVisible = false
-                item.payload?.let {
-                        data -> adapter.submitData(data)
-                }
-            }, doOnError = {
-                binding.layoutStateOrderFood.root.isVisible = true
-                binding.rvFoodMenu.isVisible = false
-                binding.layoutStateOrderFood.pbLoading.isVisible = false
-                binding.layoutStateOrderFood.tvError.isVisible = true
-            })
+                    binding.layoutStateOrderFood.root.isVisible = false
+                    binding.rvFoodMenu.apply {
+                        isVisible = true
+                        layoutManager = GridLayoutManager(requireContext(), span)
+                        adapter = this@OrderFoodHomeFragment.adapter
+                    }
+                    binding.layoutStateOrderFood.pbLoading.isVisible = false
+                    binding.layoutStateOrderFood.tvError.isVisible = false
+                    item.payload?.let {
+                            data ->
+                        adapter.submitData(data)
+                    }
+                }, doOnError = {
+                    binding.layoutStateOrderFood.root.isVisible = true
+                    binding.rvFoodMenu.isVisible = false
+                    binding.layoutStateOrderFood.pbLoading.isVisible = false
+                    binding.layoutStateOrderFood.tvError.isVisible = true
+                })
         }
 
         viewModel.categories.observe(viewLifecycleOwner) {

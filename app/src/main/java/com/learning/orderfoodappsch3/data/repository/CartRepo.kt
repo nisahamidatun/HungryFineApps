@@ -4,7 +4,7 @@ import com.learning.orderfoodappsch3.data.database.datasource.CartDataSource
 import com.learning.orderfoodappsch3.data.database.entity.CartEntity
 import com.learning.orderfoodappsch3.data.database.mapper.toCartEntity
 import com.learning.orderfoodappsch3.data.database.mapper.toCartList
-import com.learning.orderfoodappsch3.data.network.api.datasource.RestaurantApiDataSource
+import com.learning.orderfoodappsch3.data.network.api.datasource.RestaurantDataSource
 import com.learning.orderfoodappsch3.data.network.api.model.order.OrderItemRequest
 import com.learning.orderfoodappsch3.data.network.api.model.order.OrderRequest
 import com.learning.orderfoodappsch3.model.Cart
@@ -29,8 +29,8 @@ interface CartRepo {
 
 class CartRepoImpl(
     private val dataSource: CartDataSource,
-    private val restaurantApiDataSource: RestaurantApiDataSource
-): CartRepo{
+    private val restaurantApiDataSource: RestaurantDataSource
+) : CartRepo {
 
     override suspend fun deleteAll() {
         dataSource.deleteAll()
@@ -49,9 +49,11 @@ class CartRepoImpl(
             }
         }
             .map {
-                if (it.payload?.first?.isEmpty() == true)
+                if (it.payload?.first?.isEmpty() == true) {
                     ResultWrapper.Empty(it.payload)
-                else it
+                } else {
+                    it
+                }
             }
             .onStart {
                 emit(ResultWrapper.Loading())
@@ -84,7 +86,7 @@ class CartRepoImpl(
 
     override suspend fun decreaseCart(item: Cart): Flow<ResultWrapper<Boolean>> {
         val modifiedCart = item.copy().apply { quantityCartItem -= 1 }
-        return if (modifiedCart.quantityCartItem <= 0){
+        return if (modifiedCart.quantityCartItem <= 0) {
             proceedFlow { dataSource.deleteCart(modifiedCart.toCartEntity()) > 0 }
         } else {
             proceedFlow { dataSource.updateCart(modifiedCart.toCartEntity()) > 0 }

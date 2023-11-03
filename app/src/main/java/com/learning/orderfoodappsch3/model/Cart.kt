@@ -7,5 +7,5 @@ data class Cart(
     val orderfoodPrice: Int,
     val orderfoodImgUrl: String,
     var quantityCartItem: Int = 0,
-    var notes: String? = null,
+    var notes: String? = null
 )

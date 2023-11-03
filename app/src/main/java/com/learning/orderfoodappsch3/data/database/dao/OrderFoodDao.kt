@@ -21,9 +21,8 @@ interface OrderFoodDao {
     suspend fun insertOrderFood(orderfood: List<OrderFoodEntity>)
 
     @Update
-    suspend fun updateOrderFood(orderfood: OrderFoodEntity) : Int
+    suspend fun updateOrderFood(orderfood: OrderFoodEntity): Int
 
     @Delete
-    suspend fun deleteOrderFood(orderfood: OrderFoodEntity) : Int
-
+    suspend fun deleteOrderFood(orderfood: OrderFoodEntity): Int
 }

@@ -1,41 +1,29 @@
 package com.learning.orderfoodappsch3.presentation.ui.login
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
 import com.learning.orderfoodappsch3.R
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSource
-import com.learning.orderfoodappsch3.data.network.firebase.auth.FirebaseAuthDataSourceImpl
-import com.learning.orderfoodappsch3.data.repository.UserRepository
-import com.learning.orderfoodappsch3.data.repository.UserRepositoryImpl
-import com.learning.orderfoodappsch3.presentation.ui.register.RegisterActivity
 import com.learning.orderfoodappsch3.databinding.ActivityLoginBinding
 import com.learning.orderfoodappsch3.presentation.ui.main.MainActivity
-import com.learning.orderfoodappsch3.utils.GenericViewModelFactory
+import com.learning.orderfoodappsch3.presentation.ui.register.RegisterActivity
+import com.learning.orderfoodappsch3.utils.AssetWrapper
 import com.learning.orderfoodappsch3.utils.highLightWord
 import com.learning.orderfoodappsch3.utils.proceedWhen
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LoginActivity : AppCompatActivity() {
     private val binding: ActivityLoginBinding by lazy {
         ActivityLoginBinding.inflate(layoutInflater)
     }
 
-    private val viewModel: LoginViewModel by viewModels {
-        GenericViewModelFactory.create(createViewModel())
-    }
-
-    private fun createViewModel(): LoginViewModel {
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val dataSource: FirebaseAuthDataSource = FirebaseAuthDataSourceImpl(firebaseAuth)
-        val repo: UserRepository = UserRepositoryImpl(dataSource)
-        return LoginViewModel(repo)
-    }
+    private val viewModel: LoginViewModel by viewModel()
+    private val assetWrapper: AssetWrapper by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,17 +44,20 @@ class LoginActivity : AppCompatActivity() {
                 binding.layoutLogin.pbLoading.isVisible = true
                 binding.layoutLogin.cirLoginButton.isVisible = false
             }, doOnSuccess = {
-                binding.layoutLogin.pbLoading.isVisible = false
-                binding.layoutLogin.cirLoginButton.isVisible = true
-                binding.layoutLogin.cirLoginButton.isEnabled = false
-                navigateToMain()
-            }, doOnError = {
-                binding.layoutLogin.pbLoading.isVisible = false
-                binding.layoutLogin.cirLoginButton.isVisible = true
-                binding.layoutLogin.cirLoginButton.isEnabled = true
-                Toast.makeText(this,
-                    getString(R.string.login_failed, it.exception?.message), Toast.LENGTH_SHORT).show()
-            })
+                    binding.layoutLogin.pbLoading.isVisible = false
+                    binding.layoutLogin.cirLoginButton.isVisible = true
+                    binding.layoutLogin.cirLoginButton.isEnabled = false
+                    navigateToMain()
+                }, doOnError = {
+                    binding.layoutLogin.pbLoading.isVisible = false
+                    binding.layoutLogin.cirLoginButton.isVisible = true
+                    binding.layoutLogin.cirLoginButton.isEnabled = true
+                    Toast.makeText(
+                        this,
+                        assetWrapper.getString(R.string.login_failed),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                })
         }
     }
 
@@ -81,7 +72,7 @@ class LoginActivity : AppCompatActivity() {
         binding.layoutLogin.cirLoginButton.setOnClickListener {
             doLogin()
         }
-        binding.layoutLogin.tvNavToRegister.highLightWord(getString(R.string.text_highlight_register)) {
+        binding.layoutLogin.tvNavToRegister.highLightWord(assetWrapper.getString(R.string.text_highlight_register)) {
             navigateToRegister()
         }
     }
@@ -94,7 +85,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun doLogin() {
-        if(isFormValid()){
+        if (isFormValid()) {
             val email = binding.layoutLogin.editTextEmail.text.toString().trim()
             val password = binding.layoutLogin.editTextPassword.text.toString().trim()
             viewModel.doLogin(email, password)
@@ -108,13 +99,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun checkEmailValidation(email: String): Boolean {
-        return if(email.isEmpty()){
+        return if (email.isEmpty()) {
             binding.layoutLogin.textInputEmail.isErrorEnabled = true
-            binding.layoutLogin.textInputEmail.error = getString(R.string.text_error_email_empty)
+            binding.layoutLogin.textInputEmail.error = assetWrapper.getString(R.string.text_error_email_empty)
             false
-        } else if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.layoutLogin.textInputEmail.isErrorEnabled = true
-            binding.layoutLogin.textInputEmail.error = getString(R.string.text_error_email_invalid)
+            binding.layoutLogin.textInputEmail.error = assetWrapper.getString(R.string.text_error_email_invalid)
             false
         } else {
             binding.layoutLogin.textInputEmail.isErrorEnabled = false
@@ -126,13 +117,13 @@ class LoginActivity : AppCompatActivity() {
         password: String,
         textInputLayout: TextInputLayout
     ): Boolean {
-        return if(password.isEmpty()){
+        return if (password.isEmpty()) {
             textInputLayout.isErrorEnabled = true
-            textInputLayout.error = getString(R.string.text_error_password_empty)
+            textInputLayout.error = assetWrapper.getString(R.string.text_error_password_empty)
             false
-        } else if(password.length < 8) {
+        } else if (password.length < 8) {
             textInputLayout.isErrorEnabled = true
-            textInputLayout.error = getString(R.string.text_error_password_less_than_8_char)
+            textInputLayout.error = assetWrapper.getString(R.string.text_error_password_less_than_8_char)
             false
         } else {
             textInputLayout.isErrorEnabled = false

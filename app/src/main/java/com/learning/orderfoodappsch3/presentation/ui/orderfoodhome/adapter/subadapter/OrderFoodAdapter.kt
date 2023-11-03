@@ -19,30 +19,39 @@ class OrderFoodAdapter(
     var modeAdapterLayout: AdapterLayoutMode
 ) : RecyclerView.Adapter<ViewHolder>() {
 
-    private val dataDiffer = AsyncListDiffer(this, object : DiffUtil.ItemCallback<OrderFood>(){
-        override fun areItemsTheSame(oldItem: OrderFood, newItem: OrderFood): Boolean {
-            return oldItem.id == newItem.id
-        }
+    private val dataDiffer = AsyncListDiffer(
+        this,
+        object : DiffUtil.ItemCallback<OrderFood>() {
+            override fun areItemsTheSame(oldItem: OrderFood, newItem: OrderFood): Boolean {
+                return oldItem.id == newItem.id
+            }
 
-        override fun areContentsTheSame(oldItem: OrderFood, newItem: OrderFood): Boolean {
-            return oldItem.hashCode() == newItem.hashCode()
+            override fun areContentsTheSame(oldItem: OrderFood, newItem: OrderFood): Boolean {
+                return oldItem.hashCode() == newItem.hashCode()
+            }
         }
-    })
+    )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return when (viewType){
+        return when (viewType) {
             AdapterLayoutMode.GRID.ordinal -> {
                 GridOrderFoodItemViewHolder(
                     binding = ItemGridOrderFoodBinding.inflate(
-                        LayoutInflater.from(parent.context), parent, false
-                    ), onListOrderFoodClicked
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    ),
+                    onListOrderFoodClicked
                 )
             }
             else -> {
                 LinearOrderFoodItemViewHolder(
                     binding = ItemLinearOrderFoodBinding.inflate(
-                        LayoutInflater.from(parent.context), parent, false
-                    ), onListOrderFoodClicked
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    ),
+                    onListOrderFoodClicked
                 )
             }
         }
@@ -58,11 +67,11 @@ class OrderFoodAdapter(
         return modeAdapterLayout.ordinal
     }
 
-    fun submitData(data: List<OrderFood>){
+    fun submitData(data: List<OrderFood>) {
         dataDiffer.submitList(data)
     }
 
-    fun refreshList(){
-        notifyItemRangeChanged(0,dataDiffer.currentList.size)
+    fun refreshList() {
+        notifyItemRangeChanged(0, dataDiffer.currentList.size)
     }
 }

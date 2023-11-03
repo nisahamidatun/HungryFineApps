@@ -6,4 +6,3 @@ import androidx.datastore.preferences.preferencesDataStore
 val Context.appDataStore by preferencesDataStore(
     name = "OrderFoodDataStore"
 )
-
