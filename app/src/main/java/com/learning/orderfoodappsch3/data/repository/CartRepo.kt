@@ -12,7 +12,9 @@ import com.learning.orderfoodappsch3.model.OrderFood
 import com.learning.orderfoodappsch3.utils.ResultWrapper
 import com.learning.orderfoodappsch3.utils.proceed
 import com.learning.orderfoodappsch3.utils.proceedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -55,8 +57,12 @@ class CartRepoImpl(
                     it
                 }
             }
+            .catch {
+                emit(ResultWrapper.Error(Exception(it)))
+            }
             .onStart {
                 emit(ResultWrapper.Loading())
+                delay(2000)
             }
     }
 
