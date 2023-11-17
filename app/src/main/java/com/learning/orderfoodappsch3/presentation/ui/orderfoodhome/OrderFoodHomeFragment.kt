@@ -14,16 +14,13 @@ import com.learning.orderfoodappsch3.presentation.ui.orderfooddetail.DetailOrder
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.AdapterLayoutMode
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.subadapter.CategoriesAdapter
 import com.learning.orderfoodappsch3.presentation.ui.orderfoodhome.adapter.subadapter.OrderFoodAdapter
-import com.learning.orderfoodappsch3.utils.AssetWrapper
 import com.learning.orderfoodappsch3.utils.proceedWhen
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class OrderFoodHomeFragment : Fragment() {
     private lateinit var binding: FragmentOrderFoodHomeBinding
 
     private val viewModel: OrderFoodHomeViewModel by viewModel()
-    private val assetWrapper: AssetWrapper by inject()
 
     private val adapter: OrderFoodAdapter by lazy {
         OrderFoodAdapter(
